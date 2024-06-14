@@ -80,13 +80,15 @@ def download_model_folder(base_url, model_folder):
     }
     
     for local_file, remote_file in files.items():
-        file_url = base_url + remote_file  # Construction correcte de l'URL
+        file_url = base_url + remote_file
+        st.write(f"Downloading {file_url}")
         response = requests.get(file_url)
         file_path = os.path.join(model_folder, local_file)
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
         if response.status_code == 200:
             with open(file_path, 'wb') as f:
                 f.write(response.content)
+            st.write(f"Successfully downloaded {local_file}")
         else:
             st.error(f"Failed to download {local_file} from {file_url}")
 
@@ -135,9 +137,11 @@ if 'converted_image_path' in st.session_state and 'patient_folder' in st.session
                 st.write(f"Input folder: {input_folder}")
                 st.write(f"Output folder: {output_folder}")
 
+                # Faire la prédiction
                 predict_from_folder(model_folder, input_folder, output_folder, folds=[0], save_npz=False, num_threads_preprocessing=1, num_threads_nifti_save=1, lowres_segmentations=None, part_id=0, num_parts=1, tta=False)
 
                 segmentation_file_path = os.path.join(output_folder, "900_0000.nii.gz")
+                st.write(f"Segmentation file path: {segmentation_file_path}")
 
                 segmented_img = nib.load(segmentation_file_path)
                 st.success("Segmentation complete and saved.")
