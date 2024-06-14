@@ -291,7 +291,7 @@ elif choice == "Radiomics Score Generator":
                 normalized_rad_scores = scaler.transform(rad_scores.reshape(-1, 1)).flatten()
                 st.write(f"Normalized RAD-Score for the processed patients: {normalized_rad_scores}")
             except Exception as e:
-                st.error(f"Error during RAD-Score calculation: {str(e)})
+                st.error(f"Error during RAD-Score calculation: {str(e)}")
 
 elif choice == "Contact":
     contact()
