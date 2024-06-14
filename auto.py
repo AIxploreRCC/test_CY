@@ -106,7 +106,6 @@ if st.button("Download Model Files"):
     st.session_state.model_folder = model_folder
 
 
-
 import os
 import streamlit as st
 import tempfile
@@ -196,4 +195,5 @@ if 'converted_image_path' in st.session_state and 'patient_folder' in st.session
                 st.error(f"Error during automatic segmentation: {str(e)}")
 else:
     st.warning("Please complete Step 1 and Step 2 first.")
+
 
