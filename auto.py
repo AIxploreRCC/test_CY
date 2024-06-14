@@ -58,11 +58,11 @@ from nnunet.inference.predict import predict_from_folder
 import nibabel as nib
 import matplotlib.pyplot as plt
 
-# URL du dossier modèle sur GitHub
-model_folder_url = "https://github.com/AIxploreRCC/test_CY/raw/main/seg/"
+# URL de base du dossier modèle sur GitHub
+base_model_folder_url = "https://github.com/AIxploreRCC/test_CY/raw/main/seg/"
 
 # Fonction pour télécharger tous les fichiers depuis le dossier du modèle sur GitHub
-def download_model_folder(url, model_folder):
+def download_model_folder(base_url, model_folder):
     os.makedirs(model_folder, exist_ok=True)
     files = {
         "plans.pkl": "plans.pkl",
@@ -80,7 +80,7 @@ def download_model_folder(url, model_folder):
     }
     
     for local_file, remote_file in files.items():
-        file_url = os.path.join(url, remote_file).replace("/", "%2F")  # Encodage de l'URL pour éviter les problèmes
+        file_url = base_url + remote_file  # Construction correcte de l'URL
         response = requests.get(file_url)
         file_path = os.path.join(model_folder, local_file)
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
@@ -116,7 +116,7 @@ if 'converted_image_path' in st.session_state and 'patient_folder' in st.session
     patient_folder = st.session_state.patient_folder
 
     model_folder = "seg"
-    download_model_folder(model_folder_url, model_folder)
+    download_model_folder(base_model_folder_url, model_folder)
     st.success(f"Model downloaded to {model_folder}")
 
     if st.button("Start Automatic Segmentation"):
@@ -157,4 +157,3 @@ if 'converted_image_path' in st.session_state and 'patient_folder' in st.session
                 st.error(f"Error during automatic segmentation: {str(e)}")
 else:
     st.warning("Please complete Part 1 first to upload and convert the CT image.")
-
