@@ -1,4 +1,4 @@
-
+pyradiomics
 streamlit
 pandas
 numpy
