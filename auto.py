@@ -2,6 +2,15 @@ import streamlit as st
 import os
 import requests
 import tempfile
+import torch
+from nnunet.inference.predict import predict_from_folder
+
+# Désactiver CUDA si non disponible
+if not torch.cuda.is_available():
+    torch.backends.cudnn.enabled = False
+    torch.backends.cudnn.benchmark = False
+    torch.backends.cudnn.deterministic = True
+    torch.set_default_tensor_type(torch.FloatTensor)
 
 # Fonction pour télécharger les fichiers du modèle
 def download_model_files(base_url, model_folder):
@@ -51,6 +60,7 @@ def set_nnunet_paths():
 
     return temp_dir
 
+# Étape 1: Préparation des fichiers
 st.title("Étape 1: Préparation des fichiers")
 
 uploaded_file = st.file_uploader("Téléchargez une image .nii", type="nii")
@@ -104,14 +114,7 @@ if uploaded_file is not None:
 
 st.write("Passez à l'étape 2 pour la prédiction.")
 
-
-
-
-
-import streamlit as st
-import os
-from nnunet.inference.predict import predict_from_folder
-
+# Étape 2: Prédiction
 st.title("Étape 2: Prédiction")
 
 if 'new_file' in st.session_state and 'temp_dir' in st.session_state and 'model_folder' in st.session_state:
@@ -122,7 +125,6 @@ if 'new_file' in st.session_state and 'temp_dir' in st.session_state and 'model_
     input_folder = os.path.dirname(new_file)
     output_folder = os.path.join(input_folder, "output")
     os.makedirs(output_folder, exist_ok=True)
-
 
     lowres_segmentations = None  # Utilisé uniquement pour les modèles cascade
     part_id = 0
@@ -144,10 +146,10 @@ if 'new_file' in st.session_state and 'temp_dir' in st.session_state and 'model_
                     save_npz=False,
                     num_threads_preprocessing=1,
                     num_threads_nifti_save=1,
-                    lowres_segmentations=None,
-                    part_id=0,
-                    num_parts=1,
-                    tta=False
+                    lowres_segmentations=lowres_segmentations,
+                    part_id=part_id,
+                    num_parts=num_parts,
+                    tta=tta
                 )
                 st.write("La segmentation est terminée et les résultats sont enregistrés dans le dossier de sortie.")
             except Exception as e:
