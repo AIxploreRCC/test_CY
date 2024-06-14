@@ -1,0 +1,14 @@
+pyradiomics
+streamlit
+pandas
+numpy
+matplotlib
+lifelines
+joblib
+scikit-survival
+plotly
+SimpleITK 
+nibabel
+scikit-learn
+scipy
+osqp
