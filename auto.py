@@ -49,7 +49,6 @@ if uploaded_ct:
     except Exception as e:
         st.error(f"Error during file conversion: {str(e)}")
 
-
 import os
 import requests
 import streamlit as st
@@ -137,40 +136,30 @@ if 'converted_image_path' in st.session_state and 'patient_folder' in st.session
                 st.write(f"Input folder: {input_folder}")
                 st.write(f"Output folder: {output_folder}")
 
-                # Log des fichiers dans le dossier d'entrée
-                st.write(f"Files in input folder: {os.listdir(input_folder)}")
-
                 # Faire la prédiction
                 predict_from_folder(model_folder, input_folder, output_folder, folds=[0], save_npz=False, num_threads_preprocessing=1, num_threads_nifti_save=1, lowres_segmentations=None, part_id=0, num_parts=1, tta=False)
 
                 segmentation_file_path = os.path.join(output_folder, "900_0000.nii.gz")
                 st.write(f"Segmentation file path: {segmentation_file_path}")
 
-                if os.path.exists(segmentation_file_path):
-                    segmented_img = nib.load(segmentation_file_path)
-                    st.success("Segmentation complete and saved.")
+                segmented_img = nib.load(segmentation_file_path)
+                st.success("Segmentation complete and saved.")
 
-                    # Affichage de l'image segmentée
-                    segmented_array = segmented_img.get_fdata()
-                    slice_number = st.slider('Select Slice', 0, segmented_array.shape[2] - 1, segmented_array.shape[2] // 2)
+                # Affichage de l'image segmentée
+                segmented_array = segmented_img.get_fdata()
+                slice_number = st.slider('Select Slice', 0, segmented_array.shape[2] - 1, segmented_array.shape[2] // 2)
 
-                    st.write("Segmented Image:")
-                    plt.figure(figsize=(6, 6))
-                    plt.imshow(segmented_array[:, :, slice_number], cmap="gray")
-                    plt.title(f"Segmented Image (slice {slice_number})")
-                    plt.axis("off")
-                    st.pyplot(plt)
-                else:
-                    st.error("Segmentation file not found.")
+                st.write("Segmented Image:")
+                plt.figure(figsize=(6, 6))
+                plt.imshow(segmented_array[:, :, slice_number], cmap="gray")
+                plt.title(f"Segmented Image (slice {slice_number})")
+                plt.axis("off")
+                st.pyplot(plt)
 
             except Exception as e:
                 st.error(f"Error during automatic segmentation: {str(e)}")
 else:
     st.warning("Please complete Part 1 first to upload and convert the CT image.")
-age_path = renamed_file
-        st.session_state.patient_folder = patient_folder
 
-    except Exception as e:
-        st.error(f"Error during file conversion: {str(e)}")
 
 
