@@ -111,7 +111,7 @@ def set_nnunet_paths():
     os.environ['RESULTS_FOLDER'] = RESULTS_FOLDER
 
     os.makedirs(nnUNet_raw_data_base, exist_ok=True)
-    os.makedirs(nnUNet_preprocessed, exist.ok=True)
+    os.makedirs(nnUNet_preprocessed, exist_ok=True)
     os.makedirs(RESULTS_FOLDER, exist.ok=True)
 
     return temp_dir
