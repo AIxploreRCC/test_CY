@@ -1,68 +1,11 @@
-import os
 import streamlit as st
-import tempfile
-import SimpleITK as sitk
-import nibabel as nib
-import matplotlib.pyplot as plt
-
-# Titre de l'application
-st.title("Automatic Segmentation App")
-
-# Téléchargement du fichier CT
-uploaded_ct = st.file_uploader("Upload CT Image (Step 1)", type=["nii"])
-
-if uploaded_ct:
-    if st.button("Convert to .nii.gz"):
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.nii') as tmp_ct:
-            tmp_ct.write(uploaded_ct.getvalue())
-            tmp_ct.seek(0)
-            ct_image_path = tmp_ct.name
-
-        # Convertir .nii en .nii.gz et renommer
-        try:
-            patient_folder = tempfile.mkdtemp()
-            renamed_file = os.path.join(patient_folder, "900_0000.nii.gz")
-
-            # Convertir .nii à .nii.gz et renommer
-            sitk_image = sitk.ReadImage(ct_image_path)
-            sitk.WriteImage(sitk_image, renamed_file)
-
-            st.success(f"File converted and renamed to {renamed_file}")
-
-            # Charger l'image convertie pour l'affichage
-            converted_image = nib.load(renamed_file)
-            converted_array = converted_image.get_fdata()
-
-            # Afficher le slider pour sélectionner les tranches
-            slice_number = st.slider('Select Slice', 0, converted_array.shape[2] - 1, converted_array.shape[2] // 2)
-
-            # Afficher l'image convertie
-            plt.figure(figsize=(6, 6))
-            plt.imshow(converted_array[:, :, slice_number], cmap="gray")
-            plt.title(f"Converted Image (slice {slice_number})")
-            plt.axis("off")
-            st.pyplot(plt)
-
-            # Sauvegarder le chemin de l'image convertie pour la partie suivante
-            st.session_state.converted_image_path = renamed_file
-            st.session_state.patient_folder = patient_folder
-
-        except Exception as e:
-            st.error(f"Error during file conversion: {str(e)}")
-
-
-
-
+import os
 import requests
-import os
-import streamlit as st
+import tempfile
+from nnunet.inference.predict import predict_from_folder
 
-# URL de base du dossier modèle sur GitHub
-base_model_folder_url = "https://github.com/AIxploreRCC/test_CY/raw/main/seg/"
-
-# Fonction pour télécharger tous les fichiers depuis le dossier du modèle sur GitHub
-def download_model_folder(base_url, model_folder):
-    os.makedirs(model_folder, exist_ok=True)
+# Fonction pour télécharger les fichiers du modèle
+def download_model_files(base_url, model_folder):
     files = {
         "plans.pkl": "plans.pkl",
         "postprocessing.json": "postprocessing.json",
@@ -82,38 +25,17 @@ def download_model_folder(base_url, model_folder):
         "fold_4/model_final_checkpoint.model.pkl": "fold_4/model_final_checkpoint.model.pkl",
         "fold_4/debug.json": "fold_4/debug.json"
     }
-    
+
     for local_file, remote_file in files.items():
         file_url = base_url + remote_file
-        st.write(f"Downloading {file_url}")
         response = requests.get(file_url)
         file_path = os.path.join(model_folder, local_file)
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
         if response.status_code == 200:
             with open(file_path, 'wb') as f:
                 f.write(response.content)
-            st.write(f"Successfully downloaded {local_file}")
-        else:
-            st.error(f"Failed to download {local_file} from {file_url}")
 
-# Titre de l'application
-st.title("Automatic Segmentation App - Step 2")
-
-if st.button("Download Model Files"):
-    model_folder = tempfile.mkdtemp()  # Utiliser un répertoire temporaire pour le modèle
-    download_model_folder(base_model_folder_url, model_folder)
-    st.success(f"Model downloaded to {model_folder}")
-    st.session_state.model_folder = model_folder
-
-
-import os
-import streamlit as st
-import tempfile
-from nnunet.inference.predict import predict_from_folder
-import nibabel as nib
-import matplotlib.pyplot as plt
-
-# Définir les chemins nnU-Net
+# Fonction pour configurer les chemins nnU-Net
 def set_nnunet_paths():
     temp_dir = tempfile.mkdtemp()
     nnUNet_raw_data_base = os.path.join(temp_dir, 'nnUNet_raw_data_base')
@@ -130,73 +52,73 @@ def set_nnunet_paths():
 
     return temp_dir
 
-# Titre de l'application
-st.title("Automatic Segmentation App - Step 3")
+st.title("Segmentation Automatique avec nnU-Net")
 
-# Vérifiez si l'image convertie et les fichiers du modèle sont disponibles dans l'état de session
-if 'converted_image_path' in st.session_state and 'patient_folder' in st.session_state and 'model_folder' in st.session_state:
-    converted_image_path = st.session_state.converted_image_path
-    patient_folder = st.session_state.patient_folder
-    model_folder = st.session_state.model_folder
+uploaded_file = st.file_uploader("Téléchargez une image .nii", type="nii")
+if uploaded_file is not None:
+    # Enregistrer l'image téléchargée
+    with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+        temp_file.write(uploaded_file.getvalue())
+        original_file = temp_file.name
 
-    if st.button("Start Automatic Segmentation"):
-        if not os.path.exists(os.path.join(model_folder, "plans.pkl")):
-            st.error("The plans.pkl file was not found in the model folder. Please check the model download.")
-        else:
-            try:
-                temp_dir = set_nnunet_paths()
-                st.write(f"Temporary directory for nnU-Net: {temp_dir}")
+    # Renommer le fichier
+    new_file = os.path.join(os.path.dirname(original_file), "900_0000.nii.gz")
+    os.rename(original_file, new_file)
+    st.write(f"Fichier renommé en : {new_file}")
 
-                input_folder = patient_folder
-                output_folder = os.path.join(patient_folder, "output")
-                os.makedirs(output_folder, exist_ok=True)
+    # Configurer les chemins nnU-Net
+    temp_dir = set_nnunet_paths()
+    st.write(f"Temporary directory for nnU-Net: {temp_dir}")
 
-                # Log the paths being used
-                st.write(f"Input folder: {input_folder}")
-                st.write(f"Output folder: {output_folder}")
+    # Dossier du modèle téléchargé
+    model_folder = os.path.join(temp_dir, "nnUNet_trained_models", "seg")
 
-                # Log des fichiers dans le dossier d'entrée
-                st.write(f"Files in input folder: {os.listdir(input_folder)}")
+    # Télécharger les fichiers du modèle
+    base_model_folder_url = "https://github.com/AIxploreRCC/test_CY/raw/main/seg/"
+    download_model_files(base_model_folder_url, model_folder)
 
-                # Vérifiez que le fichier 900_0000.nii.gz est bien présent
-                if "900_0000.nii.gz" not in os.listdir(input_folder):
-                    st.error(f"Expected file '900_0000.nii.gz' not found in {input_folder}")
-                else:
-                    st.write(f"File '900_0000.nii.gz' found in {input_folder}")
+    # Vérifier la présence des fichiers nécessaires
+    required_files = [
+        "plans.pkl",
+        "postprocessing.json",
+        "fold_0/model_final_checkpoint.model",
+        "fold_0/debug.json",
+        "fold_1/model_final_checkpoint.model",
+        "fold_1/debug.json",
+        "fold_2/model_final_checkpoint.model",
+        "fold_2/debug.json",
+        "fold_3/model_final_checkpoint.model",
+        "fold_3/debug.json",
+        "fold_4/model_final_checkpoint.model",
+        "fold_4/debug.json"
+    ]
 
-                # Faire la prédiction
-                st.write("Starting prediction...")
-                
-                try:
-                    predict_from_folder(model_folder, input_folder, output_folder, folds=[0], save_npz=False, num_threads_preprocessing=1, num_threads_nifti_save=1, lowres_segmentations=None, part_id=0, num_parts=1, tta=False)
-                    st.write("Prediction completed successfully.")
-                except Exception as e:
-                    st.error(f"Error during prediction: {str(e)}")
+    all_files_present = all(os.path.exists(os.path.join(model_folder, file)) for file in required_files)
 
-                segmentation_file_path = os.path.join(output_folder, "900_0000.nii.gz")
-                st.write(f"Segmentation file path: {segmentation_file_path}")
+    if all_files_present:
+        st.write("Tous les fichiers du modèle ont été téléchargés avec succès.")
 
-                # Vérifiez les fichiers dans le dossier de sortie
-                st.write(f"Files in output folder: {os.listdir(output_folder)}")
+        # Faire la prédiction
+        input_folder = os.path.dirname(new_file)
+        output_folder = os.path.join(input_folder, "output")
+        os.makedirs(output_folder, exist_ok=True)
 
-                if os.path.exists(segmentation_file_path):
-                    segmented_img = nib.load(segmentation_file_path)
-                    st.success("Segmentation complete and saved.")
-
-                    # Affichage de l'image segmentée
-                    segmented_array = segmented_img.get_fdata()
-                    slice_number = st.slider('Select Slice', 0, segmented_array.shape[2] - 1, segmented_array.shape[2] // 2)
-
-                    st.write("Segmented Image:")
-                    plt.figure(figsize=(6, 6))
-                    plt.imshow(segmented_array[:, :, slice_number], cmap="gray")
-                    plt.title(f"Segmented Image (slice {slice_number})")
-                    plt.axis("off")
-                    st.pyplot(plt)
-                else:
-                    st.error("Segmentation file not found.")
-
-            except Exception as e:
-                st.error(f"Error during automatic segmentation: {str(e)}")
-else:
-    st.warning("Please complete Step 1 and Step 2 first.")
+        try:
+            predict_from_folder(
+                model_folder,
+                input_folder,
+                output_folder,
+                folds=[0],
+                save_npz=False,
+                num_threads_preprocessing=1,
+                num_threads_nifti_save=1,
+                lowres_segmentations=None,
+                part_id=0,
+                num_parts=1,
+                tta=False
+            )
+            st.write("La segmentation est terminée et les résultats sont enregistrés dans le dossier de sortie.")
+        except Exception as e:
+            st.write(f"Erreur lors de la prédiction : {str(e)}")
+    else:
+        st.write("Certains fichiers du modèle sont manquants. Veuillez vérifier le téléchargement des fichiers.")
