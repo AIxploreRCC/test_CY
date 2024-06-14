@@ -43,7 +43,10 @@ if uploaded_ct:
         st.pyplot(plt)
 
         # Sauvegarder le chemin de l'image convertie pour la partie suivante
-        st.session_state.converted_imimport os
+        st.session_state.converted_im
+
+
+import os
 import requests
 import streamlit as st
 import tempfile
