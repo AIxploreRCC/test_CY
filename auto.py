@@ -6,21 +6,47 @@ import SimpleITK as sitk
 from nnunet.inference.predict import predict_from_folder
 
 # URL du dossier modèle sur GitHub
-model_folder_url = "https://github.com/AIxploreRCC/test_CY/tree/main/seg"
+model_folder_url = "https://github.com/AIxploreRCC/test_CY/raw/main/seg/"
 
 # Fonction pour télécharger tous les fichiers depuis le dossier du modèle sur GitHub
 def download_model_folder(url, model_folder):
     os.makedirs(model_folder, exist_ok=True)
-    filenames = ["plans.pkl", "model_final_checkpoint.model"]  # Ajoutez tous les fichiers nécessaires ici
+    filenames = [
+        "plans.pkl",
+        "postprocessing.json",
+        "fold_0/model_final_checkpoint.model",
+        "fold_1/model_final_checkpoint.model",
+        "fold_2/model_final_checkpoint.model",
+        "fold_3/model_final_checkpoint.model",
+        "fold_4/model_final_checkpoint.model",
+    ]
     for filename in filenames:
         file_url = url + filename
         response = requests.get(file_url)
         file_path = os.path.join(model_folder, filename)
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
         if response.status_code == 200:
             with open(file_path, 'wb') as f:
                 f.write(response.content)
         else:
             st.error(f"Failed to download {filename} from {file_url}")
+
+# Définir les chemins nnU-Net
+def set_nnunet_paths():
+    temp_dir = tempfile.mkdtemp()
+    nnUNet_raw_data_base = os.path.join(temp_dir, 'nnUNet_raw_data_base')
+    nnUNet_preprocessed = os.path.join(temp_dir, 'nnUNet_preprocessed')
+    RESULTS_FOLDER = os.path.join(temp_dir, 'nnUNet_trained_models')
+
+    os.environ['nnUNet_raw_data_base'] = nnUNet_raw_data_base
+    os.environ['nnUNet_preprocessed'] = nnUNet_preprocessed
+    os.environ['RESULTS_FOLDER'] = RESULTS_FOLDER
+
+    os.makedirs(nnUNet_raw_data_base, exist_ok=True)
+    os.makedirs(nnUNet_preprocessed, exist_ok=True)
+    os.makedirs(RESULTS_FOLDER, exist_ok=True)
+
+    return temp_dir
 
 # Titre de l'application
 st.title("Automatic Segmentation App")
@@ -43,6 +69,8 @@ if uploaded_ct:
             st.error("The plans.pkl file was not found in the model folder. Please check the model download.")
         else:
             try:
+                temp_dir = set_nnunet_paths()
+                
                 patient_folder = os.path.dirname(ct_image_path)
                 renamed_file = os.path.join(patient_folder, "900_0000.nii.gz")
 
