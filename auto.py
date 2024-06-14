@@ -82,6 +82,9 @@ if uploaded_ct:
                 output_folder = os.path.join(patient_folder, "output")
                 os.makedirs(output_folder, exist_ok=True)
 
+                # Ensure input file is named correctly for nnU-Net
+                os.rename(renamed_file, os.path.join(input_folder, "900_0000.nii.gz"))
+
                 predict_from_folder(model_folder, input_folder, output_folder, folds=[0], save_npz=False, num_threads_preprocessing=1, num_threads_nifti_save=1, lowres_segmentations=None, part_id=0, num_parts=1, tta=False)
 
                 segmentation_file_path = os.path.join(output_folder, "900_0000.nii.gz")
