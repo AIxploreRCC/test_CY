@@ -22,7 +22,7 @@ logo2_url = "https://raw.githubusercontent.com/AIxploreRCC/Design/main/images.pn
 
 # URLs des fichiers modèles sur GitHub
 model_files = {
-    "plans.pkl": "https://github.com/yourusername/yourrepository/raw/main/seg/plans.pkl",
+    "plans.pkl": "https://github.com/AIxploreRCC/test_CY/tree/main/seg",
     # Ajoutez d'autres fichiers nécessaires pour le modèle ici
 }
 
