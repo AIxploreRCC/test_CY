@@ -128,22 +128,23 @@ if 'new_file' in st.session_state and 'temp_dir' in st.session_state and 'model_
     st.write(f"Output folder: {output_folder}")
 
     if st.button("Start Prediction"):
-        try:
-            predict_from_folder(
-                model_folder,
-                input_folder,
-                output_folder,
-                folds=[0],
-                save_npz=False,
-                num_threads_preprocessing=1,
-                num_threads_nifti_save=1,
-                lowres_segmentations=None,
-                part_id=0,
-                num_parts=1,
-                tta=False
-            )
-            st.write("La segmentation est terminée et les résultats sont enregistrés dans le dossier de sortie.")
-        except Exception as e:
-            st.write(f"Erreur lors de la prédiction : {str(e)}")
+        with st.spinner('Prédiction en cours...'):
+            try:
+                predict_from_folder(
+                    model_folder,
+                    input_folder,
+                    output_folder,
+                    folds=[0],
+                    save_npz=False,
+                    num_threads_preprocessing=1,
+                    num_threads_nifti_save=1,
+                    lowres_segmentations=None,
+                    part_id=0,
+                    num_parts=1,
+                    tta=False
+                )
+                st.write("La segmentation est terminée et les résultats sont enregistrés dans le dossier de sortie.")
+            except Exception as e:
+                st.error(f"Erreur lors de la prédiction : {str(e)}")
 else:
     st.write("Veuillez d'abord passer par l'étape 1 pour préparer les fichiers.")
