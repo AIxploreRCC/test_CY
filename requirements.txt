@@ -12,3 +12,4 @@ nibabel
 scikit-learn
 scipy
 osqp
+nnunet
