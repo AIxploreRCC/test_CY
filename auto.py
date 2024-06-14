@@ -49,6 +49,9 @@ if uploaded_ct:
     except Exception as e:
         st.error(f"Error during file conversion: {str(e)}")
 
+
+
+
 import os
 import requests
 import streamlit as st
@@ -67,14 +70,19 @@ def download_model_folder(base_url, model_folder):
         "plans.pkl": "plans.pkl",
         "postprocessing.json": "postprocessing.json",
         "fold_0/model_final_checkpoint.model": "fold_0/model_final_checkpoint.model",
+        "fold_0/model_final_checkpoint.model.pkl": "fold_0/model_final_checkpoint.model.pkl",
         "fold_0/debug.json": "fold_0/debug.json",
         "fold_1/model_final_checkpoint.model": "fold_1/model_final_checkpoint.model",
+        "fold_1/model_final_checkpoint.model.pkl": "fold_1/model_final_checkpoint.model.pkl",
         "fold_1/debug.json": "fold_1/debug.json",
         "fold_2/model_final_checkpoint.model": "fold_2/model_final_checkpoint.model",
+        "fold_2/model_final_checkpoint.model.pkl": "fold_2/model_final_checkpoint.model.pkl",
         "fold_2/debug.json": "fold_2/debug.json",
         "fold_3/model_final_checkpoint.model": "fold_3/model_final_checkpoint.model",
+        "fold_3/model_final_checkpoint.model.pkl": "fold_3/model_final_checkpoint.model.pkl",
         "fold_3/debug.json": "fold_3/debug.json",
         "fold_4/model_final_checkpoint.model": "fold_4/model_final_checkpoint.model",
+        "fold_4/model_final_checkpoint.model.pkl": "fold_4/model_final_checkpoint.model.pkl",
         "fold_4/debug.json": "fold_4/debug.json"
     }
     
@@ -103,8 +111,8 @@ def set_nnunet_paths():
     os.environ['RESULTS_FOLDER'] = RESULTS_FOLDER
 
     os.makedirs(nnUNet_raw_data_base, exist_ok=True)
-    os.makedirs(nnUNet_preprocessed, exist_ok=True)
-    os.makedirs(RESULTS_FOLDER, exist_ok=True)
+    os.makedirs(nnUNet_preprocessed, exist.ok=True)
+    os.makedirs(RESULTS_FOLDER, exist.ok=True)
 
     return temp_dir
 
@@ -116,7 +124,7 @@ if 'converted_image_path' in st.session_state and 'patient_folder' in st.session
     converted_image_path = st.session_state.converted_image_path
     patient_folder = st.session_state.patient_folder
 
-    model_folder = "seg"
+    model_folder = tempfile.mkdtemp()  # Utiliser un répertoire temporaire pour le modèle
     download_model_folder(base_model_folder_url, model_folder)
     st.success(f"Model downloaded to {model_folder}")
 
@@ -130,11 +138,14 @@ if 'converted_image_path' in st.session_state and 'patient_folder' in st.session
 
                 input_folder = patient_folder
                 output_folder = os.path.join(patient_folder, "output")
-                os.makedirs(output_folder, exist_ok=True)
+                os.makedirs(output_folder, exist.ok=True)
 
                 # Log the paths being used
                 st.write(f"Input folder: {input_folder}")
                 st.write(f"Output folder: {output_folder}")
+
+                # Log des fichiers dans le dossier d'entrée
+                st.write(f"Files in input folder: {os.listdir(input_folder)}")
 
                 # Faire la prédiction
                 predict_from_folder(model_folder, input_folder, output_folder, folds=[0], save_npz=False, num_threads_preprocessing=1, num_threads_nifti_save=1, lowres_segmentations=None, part_id=0, num_parts=1, tta=False)
@@ -142,24 +153,24 @@ if 'converted_image_path' in st.session_state and 'patient_folder' in st.session
                 segmentation_file_path = os.path.join(output_folder, "900_0000.nii.gz")
                 st.write(f"Segmentation file path: {segmentation_file_path}")
 
-                segmented_img = nib.load(segmentation_file_path)
-                st.success("Segmentation complete and saved.")
+                if os.path.exists(segmentation_file_path):
+                    segmented_img = nib.load(segmentation_file_path)
+                    st.success("Segmentation complete and saved.")
 
-                # Affichage de l'image segmentée
-                segmented_array = segmented_img.get_fdata()
-                slice_number = st.slider('Select Slice', 0, segmented_array.shape[2] - 1, segmented_array.shape[2] // 2)
+                    # Affichage de l'image segmentée
+                    segmented_array = segmented_img.get_fdata()
+                    slice_number = st.slider('Select Slice', 0, segmented_array.shape[2] - 1, segmented_array.shape[2] // 2)
 
-                st.write("Segmented Image:")
-                plt.figure(figsize=(6, 6))
-                plt.imshow(segmented_array[:, :, slice_number], cmap="gray")
-                plt.title(f"Segmented Image (slice {slice_number})")
-                plt.axis("off")
-                st.pyplot(plt)
+                    st.write("Segmented Image:")
+                    plt.figure(figsize=(6, 6))
+                    plt.imshow(segmented_array[:, :, slice_number], cmap="gray")
+                    plt.title(f"Segmented Image (slice {slice_number})")
+                    plt.axis("off")
+                    st.pyplot(plt)
+                else:
+                    st.error("Segmentation file not found.")
 
             except Exception as e:
                 st.error(f"Error during automatic segmentation: {str(e)}")
 else:
     st.warning("Please complete Part 1 first to upload and convert the CT image.")
-
-
-
