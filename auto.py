@@ -43,7 +43,11 @@ if uploaded_ct:
         st.pyplot(plt)
 
         # Sauvegarder le chemin de l'image convertie pour la partie suivante
-        st.session_state.converted_im
+        st.session_state.converted_image_path = renamed_file
+        st.session_state.patient_folder = patient_folder
+
+    except Exception as e:
+        st.error(f"Error during file conversion: {str(e)}")
 
 
 import os
