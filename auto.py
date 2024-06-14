@@ -1,9 +1,9 @@
-import os
 import streamlit as st
 import tempfile
 import SimpleITK as sitk
 import nibabel as nib
 import matplotlib.pyplot as plt
+import os
 
 # Titre de l'application
 st.title("Automatic Segmentation App - Part 1")
