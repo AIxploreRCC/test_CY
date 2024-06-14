@@ -31,11 +31,14 @@ if uploaded_ct:
         # Charger l'image convertie pour l'affichage
         converted_image = nib.load(renamed_file)
         converted_array = converted_image.get_fdata()
-        slice_number = converted_array.shape[2] // 2  # Sélectionner la tranche du milieu
+
+        # Afficher le slider pour sélectionner les tranches
+        slice_number = st.slider('Select Slice', 0, converted_array.shape[2] - 1, converted_array.shape[2] // 2)
 
         # Afficher l'image convertie
+        plt.figure(figsize=(6, 6))
         plt.imshow(converted_array[:, :, slice_number], cmap="gray")
-        plt.title("Converted Image (middle slice)")
+        plt.title(f"Converted Image (slice {slice_number})")
         plt.axis("off")
         st.pyplot(plt)
 
