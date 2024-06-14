@@ -21,7 +21,10 @@ logo1_url = "https://raw.githubusercontent.com/AIxploreRCC/Design/main/logo%203.
 logo2_url = "https://raw.githubusercontent.com/AIxploreRCC/Design/main/images.png"
 
 # URL du modèle sur GitHub
-model_url = "https://github.com/yourusername/yourrepository/raw/main/seg/plans.pkl"
+model_files = {
+    "plans.pkl": "https://github.com/yourusername/yourrepository/raw/main/seg/plans.pkl",
+    # Ajoutez d'autres fichiers nécessaires pour le modèle ici
+}
 
 # Charger le CSS personnalisé
 def local_css(file_name):
@@ -106,10 +109,12 @@ def display_images(ct_image, seg_image, slice_number):
     plt.axis('off')
     st.pyplot(plt)
 
-def download_model(model_url, model_path):
-    response = requests.get(model_url)
-    with open(model_path, 'wb') as f:
-        f.write(response.content)
+def download_model(model_files, model_folder):
+    os.makedirs(model_folder, exist_ok=True)
+    for filename, url in model_files.items():
+        response = requests.get(url)
+        with open(os.path.join(model_folder, filename), 'wb') as f:
+            f.write(response.content)
 
 if choice == "Home":
     homee()
@@ -190,12 +195,10 @@ elif choice == "Radiomics Score Generator":
                 tmp_ct.seek(0)
                 ct_image_path = tmp_ct.name
 
-            model_folder = st.text_input("Enter the path to the model folder", value="seg")
-            
-            if st.button("Download Model"):
-                model_path = os.path.join(model_folder, "plans.pkl")
-                download_model(model_url, model_path)
-                st.success(f"Model downloaded to {model_path}")
+            model_folder = "seg"
+            st.button("Download Model")
+            download_model(model_files, model_folder)
+            st.success(f"Model downloaded to {model_folder}")
 
             if st.button("Start Automatic Segmentation"):
                 if not os.path.exists(os.path.join(model_folder, "plans.pkl")):
@@ -289,4 +292,3 @@ elif choice == "Radiomics Score Generator":
 
 elif choice == "Contact":
     contact()
-
