@@ -56,6 +56,7 @@ import streamlit as st
 import tempfile
 from nnunet.inference.predict import predict_from_folder
 import nibabel as nib
+import matplotlib.pyplot as plt
 
 # URL du dossier modèle sur GitHub
 model_folder_url = "https://github.com/AIxploreRCC/test_CY/raw/main/seg/"
@@ -95,8 +96,8 @@ def set_nnunet_paths():
     os.environ['RESULTS_FOLDER'] = RESULTS_FOLDER
 
     os.makedirs(nnUNet_raw_data_base, exist_ok=True)
-    os.makedirs(nnUNet_preprocessed, exist.ok=True)
-    os.makedirs(RESULTS_FOLDER, exist.ok=True)
+    os.makedirs(nnUNet_preprocessed, exist_ok=True)
+    os.makedirs(RESULTS_FOLDER, exist_ok=True)
 
     return temp_dir
 
@@ -122,7 +123,7 @@ if 'converted_image_path' in st.session_state and 'patient_folder' in st.session
 
                 input_folder = patient_folder
                 output_folder = os.path.join(patient_folder, "output")
-                os.makedirs(output_folder, exist.ok=True)
+                os.makedirs(output_folder, exist_ok=True)
 
                 # Log the paths being used
                 st.write(f"Input folder: {input_folder}")
@@ -150,4 +151,3 @@ if 'converted_image_path' in st.session_state and 'patient_folder' in st.session
                 st.error(f"Error during automatic segmentation: {str(e)}")
 else:
     st.warning("Please complete Part 1 first to upload and convert the CT image.")
-
