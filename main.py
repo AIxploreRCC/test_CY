@@ -20,7 +20,7 @@ from nnunet.inference.predict import predict_from_folder
 logo1_url = "https://raw.githubusercontent.com/AIxploreRCC/Design/main/logo%203.png"
 logo2_url = "https://raw.githubusercontent.com/AIxploreRCC/Design/main/images.png"
 
-# URL du modèle sur GitHub
+# URLs des fichiers modèles sur GitHub
 model_files = {
     "plans.pkl": "https://github.com/yourusername/yourrepository/raw/main/seg/plans.pkl",
     # Ajoutez d'autres fichiers nécessaires pour le modèle ici
@@ -109,12 +109,16 @@ def display_images(ct_image, seg_image, slice_number):
     plt.axis('off')
     st.pyplot(plt)
 
-def download_model(model_files, model_folder):
+def download_model_files(model_files, model_folder):
     os.makedirs(model_folder, exist_ok=True)
     for filename, url in model_files.items():
         response = requests.get(url)
-        with open(os.path.join(model_folder, filename), 'wb') as f:
-            f.write(response.content)
+        file_path = os.path.join(model_folder, filename)
+        if response.status_code == 200:
+            with open(file_path, 'wb') as f:
+                f.write(response.content)
+        else:
+            st.error(f"Failed to download {filename} from {url}")
 
 if choice == "Home":
     homee()
@@ -196,8 +200,7 @@ elif choice == "Radiomics Score Generator":
                 ct_image_path = tmp_ct.name
 
             model_folder = "seg"
-            st.button("Download Model")
-            download_model(model_files, model_folder)
+            download_model_files(model_files, model_folder)
             st.success(f"Model downloaded to {model_folder}")
 
             if st.button("Start Automatic Segmentation"):
@@ -288,7 +291,7 @@ elif choice == "Radiomics Score Generator":
                 normalized_rad_scores = scaler.transform(rad_scores.reshape(-1, 1)).flatten()
                 st.write(f"Normalized RAD-Score for the processed patients: {normalized_rad_scores}")
             except Exception as e:
-                st.error(f"Error during RAD-Score calculation: {str(e)}")
+                st.error(f"Error during RAD-Score calculation: {str(e)})
 
 elif choice == "Contact":
     contact()
