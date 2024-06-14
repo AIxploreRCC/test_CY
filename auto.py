@@ -4,6 +4,7 @@ import streamlit as st
 import tempfile
 import SimpleITK as sitk
 from nnunet.inference.predict import predict_from_folder
+import nibabel as nib
 
 # URL du dossier modèle sur GitHub
 model_folder_url = "https://github.com/AIxploreRCC/test_CY/raw/main/seg/"
@@ -74,7 +75,7 @@ if uploaded_ct:
                 patient_folder = os.path.dirname(ct_image_path)
                 renamed_file = os.path.join(patient_folder, "900_0000.nii.gz")
 
-                # Convert .nii to .nii.gz
+                # Convert .nii to .nii.gz and rename
                 sitk_image = sitk.ReadImage(ct_image_path)
                 sitk.WriteImage(sitk_image, renamed_file)
 
@@ -82,20 +83,19 @@ if uploaded_ct:
                 output_folder = os.path.join(patient_folder, "output")
                 os.makedirs(output_folder, exist_ok=True)
 
-                # Ensure input file is named correctly for nnU-Net
-                os.rename(renamed_file, os.path.join(input_folder, "900_0000.nii.gz"))
-
                 predict_from_folder(model_folder, input_folder, output_folder, folds=[0], save_npz=False, num_threads_preprocessing=1, num_threads_nifti_save=1, lowres_segmentations=None, part_id=0, num_parts=1, tta=False)
 
                 segmentation_file_path = os.path.join(output_folder, "900_0000.nii.gz")
 
-                segmented_img = sitk.ReadImage(segmentation_file_path)
+                segmented_img = nib.load(segmentation_file_path)
                 st.success("Segmentation complete and saved.")
 
                 # Affichage de l'image segmentée
-                segmented_array = sitk.GetArrayFromImage(segmented_img)
+                segmented_array = segmented_img.get_fdata()
+                slice_number = segmented_array.shape[2] // 2  # Select the middle slice
+
                 st.write("Segmented Image:")
-                st.image(segmented_array[segmented_array.shape[0]//2, :, :], caption='Segmented Image (middle slice)', use_column_width=True)
+                st.image(segmented_array[:, :, slice_number], caption='Segmented Image (middle slice)', use_column_width=True)
 
             except Exception as e:
                 st.error(f"Error during automatic segmentation: {str(e)}")
