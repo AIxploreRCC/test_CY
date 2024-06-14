@@ -166,7 +166,12 @@ if 'converted_image_path' in st.session_state and 'patient_folder' in st.session
 
                 # Faire la prédiction
                 st.write("Starting prediction...")
-                predict_from_folder(model_folder, input_folder, output_folder, folds=[0], save_npz=False, num_threads_preprocessing=1, num_threads_nifti_save=1, lowres_segmentations=None, part_id=0, num_parts=1, tta=False)
+                
+                try:
+                    predict_from_folder(model_folder, input_folder, output_folder, folds=[0], save_npz=False, num_threads_preprocessing=1, num_threads_nifti_save=1, lowres_segmentations=None, part_id=0, num_parts=1, tta=False)
+                    st.write("Prediction completed successfully.")
+                except Exception as e:
+                    st.error(f"Error during prediction: {str(e)}")
 
                 segmentation_file_path = os.path.join(output_folder, "900_0000.nii.gz")
                 st.write(f"Segmentation file path: {segmentation_file_path}")
@@ -195,5 +200,3 @@ if 'converted_image_path' in st.session_state and 'patient_folder' in st.session
                 st.error(f"Error during automatic segmentation: {str(e)}")
 else:
     st.warning("Please complete Step 1 and Step 2 first.")
-
-
