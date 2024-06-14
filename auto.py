@@ -107,7 +107,6 @@ if st.button("Download Model Files"):
 
 
 
-
 import os
 import streamlit as st
 import tempfile
@@ -160,11 +159,21 @@ if 'converted_image_path' in st.session_state and 'patient_folder' in st.session
                 # Log des fichiers dans le dossier d'entrée
                 st.write(f"Files in input folder: {os.listdir(input_folder)}")
 
+                # Vérifiez que le fichier 900_0000.nii.gz est bien présent
+                if "900_0000.nii.gz" not in os.listdir(input_folder):
+                    st.error(f"Expected file '900_0000.nii.gz' not found in {input_folder}")
+                else:
+                    st.write(f"File '900_0000.nii.gz' found in {input_folder}")
+
                 # Faire la prédiction
+                st.write("Starting prediction...")
                 predict_from_folder(model_folder, input_folder, output_folder, folds=[0], save_npz=False, num_threads_preprocessing=1, num_threads_nifti_save=1, lowres_segmentations=None, part_id=0, num_parts=1, tta=False)
 
                 segmentation_file_path = os.path.join(output_folder, "900_0000.nii.gz")
                 st.write(f"Segmentation file path: {segmentation_file_path}")
+
+                # Vérifiez les fichiers dans le dossier de sortie
+                st.write(f"Files in output folder: {os.listdir(output_folder)}")
 
                 if os.path.exists(segmentation_file_path):
                     segmented_img = nib.load(segmentation_file_path)
@@ -187,3 +196,4 @@ if 'converted_image_path' in st.session_state and 'patient_folder' in st.session
                 st.error(f"Error during automatic segmentation: {str(e)}")
 else:
     st.warning("Please complete Step 1 and Step 2 first.")
+
