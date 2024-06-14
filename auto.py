@@ -64,25 +64,31 @@ model_folder_url = "https://github.com/AIxploreRCC/test_CY/raw/main/seg/"
 # Fonction pour télécharger tous les fichiers depuis le dossier du modèle sur GitHub
 def download_model_folder(url, model_folder):
     os.makedirs(model_folder, exist_ok=True)
-    filenames = [
-        "plans.pkl",
-        "postprocessing.json",
-        "fold_0/model_final_checkpoint.model",
-        "fold_1/model_final_checkpoint.model",
-        "fold_2/model_final_checkpoint.model",
-        "fold_3/model_final_checkpoint.model",
-        "fold_4/model_final_checkpoint.model",
-    ]
-    for filename in filenames:
-        file_url = url + filename.replace("/", "%2F")  # Encodage de l'URL pour éviter les problèmes
+    files = {
+        "plans.pkl": "plans.pkl",
+        "postprocessing.json": "postprocessing.json",
+        "fold_0/model_final_checkpoint.model": "fold_0/model_final_checkpoint.model",
+        "fold_0/debug.json": "fold_0/debug.json",
+        "fold_1/model_final_checkpoint.model": "fold_1/model_final_checkpoint.model",
+        "fold_1/debug.json": "fold_1/debug.json",
+        "fold_2/model_final_checkpoint.model": "fold_2/model_final_checkpoint.model",
+        "fold_2/debug.json": "fold_2/debug.json",
+        "fold_3/model_final_checkpoint.model": "fold_3/model_final_checkpoint.model",
+        "fold_3/debug.json": "fold_3/debug.json",
+        "fold_4/model_final_checkpoint.model": "fold_4/model_final_checkpoint.model",
+        "fold_4/debug.json": "fold_4/debug.json"
+    }
+    
+    for local_file, remote_file in files.items():
+        file_url = os.path.join(url, remote_file).replace("/", "%2F")  # Encodage de l'URL pour éviter les problèmes
         response = requests.get(file_url)
-        file_path = os.path.join(model_folder, filename)
+        file_path = os.path.join(model_folder, local_file)
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
         if response.status_code == 200:
             with open(file_path, 'wb') as f:
                 f.write(response.content)
         else:
-            st.error(f"Failed to download {filename} from {file_url}")
+            st.error(f"Failed to download {local_file} from {file_url}")
 
 # Définir les chemins nnU-Net
 def set_nnunet_paths():
@@ -151,3 +157,4 @@ if 'converted_image_path' in st.session_state and 'patient_folder' in st.session
                 st.error(f"Error during automatic segmentation: {str(e)}")
 else:
     st.warning("Please complete Part 1 first to upload and convert the CT image.")
+
