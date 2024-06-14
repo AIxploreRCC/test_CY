@@ -124,7 +124,7 @@ if 'new_file' in st.session_state and 'temp_dir' in st.session_state and 'model_
     os.makedirs(output_folder, exist_ok=True)
 
     st.write(f"Temporary directory for nnU-Net: {temp_dir}")
-    st.write(f"Input folder: {input_folder}")
+    st.write(f"Input folder: {new_file}")
     st.write(f"Output folder: {output_folder}")
 
     if st.button("Start Prediction"):
