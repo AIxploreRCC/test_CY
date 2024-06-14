@@ -1,10 +1,7 @@
+import streamlit as st
 import os
 import requests
-import streamlit as st
 import tempfile
-from nnunet.inference.predict import predict_from_folder
-import nibabel as nib
-import matplotlib.pyplot as plt
 
 # Fonction pour télécharger les fichiers du modèle
 def download_model_files(base_url, model_folder):
@@ -36,8 +33,6 @@ def download_model_files(base_url, model_folder):
         if response.status_code == 200:
             with open(file_path, 'wb') as f:
                 f.write(response.content)
-        else:
-            st.error(f"Failed to download {local_file} from {file_url}")
 
 # Fonction pour configurer les chemins nnU-Net
 def set_nnunet_paths():
@@ -56,17 +51,17 @@ def set_nnunet_paths():
 
     return temp_dir
 
-st.title("Segmentation Automatique avec nnU-Net")
+st.title("Étape 1: Préparation des fichiers")
 
 uploaded_file = st.file_uploader("Téléchargez une image .nii", type="nii")
 if uploaded_file is not None:
     # Enregistrer l'image téléchargée
-    with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+    with tempfile.NamedTemporaryFile(delete=False, suffix='.nii.gz') as temp_file:
         temp_file.write(uploaded_file.getvalue())
         original_file = temp_file.name
 
     # Renommer le fichier
-    new_file = os.path.join(os.path.dirname(original_file), "900_0000.nii.gz")
+    new_file = '/tmp/900_0000.nii.gz'
     os.rename(original_file, new_file)
     st.write(f"Fichier renommé en : {new_file}")
 
@@ -101,22 +96,39 @@ if uploaded_file is not None:
 
     if all_files_present:
         st.write("Tous les fichiers du modèle ont été téléchargés avec succès.")
-        
-        # Logs pour déboguer le contenu des dossiers
-        st.write(f"Fichiers dans le dossier du modèle : {os.listdir(model_folder)}")
-        st.write(f"Fichiers dans le dossier fold_0 : {os.listdir(os.path.join(model_folder, 'fold_0'))}")
+        st.session_state['new_file'] = new_file
+        st.session_state['temp_dir'] = temp_dir
+        st.session_state['model_folder'] = model_folder
+    else:
+        st.write("Certains fichiers du modèle sont manquants. Veuillez vérifier le téléchargement des fichiers.")
 
-        # Faire la prédiction
-        input_folder = os.path.dirname(new_file)
-        output_folder = os.path.join(input_folder, "output")
-        os.makedirs(output_folder, exist_ok=True)
+st.write("Passez à l'étape 2 pour la prédiction.")
 
-        st.write(f"Input folder: {input_folder}")
-        st.write(f"Output folder: {output_folder}")
-        st.write(f"Files in input folder: {os.listdir(input_folder)}")
 
+
+
+
+import streamlit as st
+import os
+from nnunet.inference.predict import predict_from_folder
+
+st.title("Étape 2: Prédiction")
+
+if 'new_file' in st.session_state and 'temp_dir' in st.session_state and 'model_folder' in st.session_state:
+    new_file = st.session_state['new_file']
+    temp_dir = st.session_state['temp_dir']
+    model_folder = st.session_state['model_folder']
+
+    input_folder = os.path.dirname(new_file)
+    output_folder = os.path.join(input_folder, "output")
+    os.makedirs(output_folder, exist_ok=True)
+
+    st.write(f"Temporary directory for nnU-Net: {temp_dir}")
+    st.write(f"Input folder: {input_folder}")
+    st.write(f"Output folder: {output_folder}")
+
+    if st.button("Start Prediction"):
         try:
-            st.write("Starting prediction...")
             predict_from_folder(
                 model_folder,
                 input_folder,
@@ -131,23 +143,7 @@ if uploaded_file is not None:
                 tta=False
             )
             st.write("La segmentation est terminée et les résultats sont enregistrés dans le dossier de sortie.")
-
-            # Affichage du masque de segmentation
-            segmentation_file = os.path.join(output_folder, "900_0000.nii.gz")
-            if os.path.exists(segmentation_file):
-                seg_img = nib.load(segmentation_file)
-                seg_data = seg_img.get_fdata()
-                slice_number = st.slider('Select Slice', 0, seg_data.shape[2] - 1, seg_data.shape[2] // 2)
-                
-                st.write("Segmented Image Slice:")
-                plt.figure(figsize=(6, 6))
-                plt.imshow(seg_data[:, :, slice_number], cmap="gray")
-                plt.title(f"Segmented Image (slice {slice_number})")
-                plt.axis("off")
-                st.pyplot(plt)
-            else:
-                st.write("Le fichier de segmentation n'a pas été trouvé.")
         except Exception as e:
             st.write(f"Erreur lors de la prédiction : {str(e)}")
-    else:
-        st.write("Certains fichiers du modèle sont manquants. Veuillez vérifier le téléchargement des fichiers.")
+else:
+    st.write("Veuillez d'abord passer par l'étape 1 pour préparer les fichiers.")
