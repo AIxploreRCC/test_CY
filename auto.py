@@ -42,6 +42,8 @@ def download_model_files(base_url, model_folder):
         if response.status_code == 200:
             with open(file_path, 'wb') as f:
                 f.write(response.content)
+        else:
+            st.error(f"Erreur de téléchargement pour {local_file}")
 
 # Fonction pour configurer les chemins nnU-Net
 def set_nnunet_paths():
@@ -77,7 +79,7 @@ if uploaded_file is not None:
 
     # Configurer les chemins nnU-Net
     temp_dir = set_nnunet_paths()
-    st.write(f"Temporary directory for nnU-Net: {temp_dir}")
+    st.write(f"Répertoire temporaire pour nnU-Net : {temp_dir}")
 
     # Dossier du modèle téléchargé
     model_folder = os.path.join(temp_dir, "nnUNet_trained_models", "seg")
@@ -131,11 +133,11 @@ if 'new_file' in st.session_state and 'temp_dir' in st.session_state and 'model_
     num_parts = 1
     tta = False  # Test Time Augmentation
 
-    st.write(f"Temporary directory for nnU-Net: {temp_dir}")
-    st.write(f"Input folder: {new_file}")
-    st.write(f"Output folder: {output_folder}")
+    st.write(f"Répertoire temporaire pour nnU-Net : {temp_dir}")
+    st.write(f"Dossier d'entrée : {new_file}")
+    st.write(f"Dossier de sortie : {output_folder}")
 
-    if st.button("Start Prediction"):
+    if st.button("Commencer la prédiction"):
         with st.spinner('Prédiction en cours...'):
             try:
                 predict_from_folder(
