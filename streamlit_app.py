@@ -50,7 +50,7 @@ if uploaded_file is not None:
         st.success(f"Fichier téléchargé et enregistré avec succès : {uploaded_file.name}")
 
         # Dossier du modèle (local ou URL GitHub)
-        model_folder = "path/to/your/model/folder"  # Mettez à jour ce chemin avec le chemin de votre modèle
+        model_folder = "https://github.com/AIxploreRCC/test_CY/raw/main/seg/"  # Mettez à jour ce chemin avec le chemin de votre modèle
         output_folder = "output"
 
         # Bouton pour exécuter la prédiction
