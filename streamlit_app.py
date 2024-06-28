@@ -6,9 +6,13 @@ import shutil
 # Fonction pour enregistrer le fichier téléchargé
 def save_uploaded_file(uploaded_file):
     try:
-        with open(os.path.join("uploads", uploaded_file.name), "wb") as f:
+        # Créer le dossier uploads s'il n'existe pas
+        os.makedirs("uploads", exist_ok=True)
+
+        file_path = os.path.join("uploads", uploaded_file.name)
+        with open(file_path, "wb") as f:
             f.write(uploaded_file.getbuffer())
-        return os.path.join("uploads", uploaded_file.name)
+        return file_path
     except Exception as e:
         st.error(f"Erreur lors de l'enregistrement du fichier : {e}")
         return None
