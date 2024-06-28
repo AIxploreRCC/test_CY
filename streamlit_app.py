@@ -7,7 +7,7 @@ import shutil
 def save_uploaded_file(uploaded_file):
     try:
         # Créer le dossier uploads s'il n'existe pas
-        uploads_dir = "uploads"
+        uploads_dir = os.path.abspath("uploads")
         if not os.path.exists(uploads_dir):
             os.makedirs(uploads_dir)
 
@@ -23,8 +23,9 @@ def save_uploaded_file(uploaded_file):
 def run_prediction(input_file_path, model_folder, output_folder):
     try:
         # Créer le dossier de sortie s'il n'existe pas
-        if not os.path.exists(output_folder):
-            os.makedirs(output_folder)
+        output_dir = os.path.abspath(output_folder)
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
 
         # Déplacer le fichier téléchargé vers le dossier d'entrée attendu par le modèle
         input_folder = os.path.dirname(input_file_path)
