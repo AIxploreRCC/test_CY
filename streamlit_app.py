@@ -7,10 +7,11 @@ import shutil
 def save_uploaded_file(uploaded_file):
     try:
         # Créer le dossier uploads s'il n'existe pas
-        if not os.path.exists("uploads"):
-            os.makedirs("uploads")
+        uploads_dir = "uploads"
+        if not os.path.exists(uploads_dir):
+            os.makedirs(uploads_dir)
 
-        file_path = os.path.join("uploads", uploaded_file.name)
+        file_path = os.path.join(uploads_dir, uploaded_file.name)
         with open(file_path, "wb") as f:
             f.write(uploaded_file.getbuffer())
         return file_path
@@ -21,7 +22,7 @@ def save_uploaded_file(uploaded_file):
 # Fonction pour exécuter la prédiction
 def run_prediction(input_file_path, model_folder, output_folder):
     try:
-        # Créez le dossier de sortie s'il n'existe pas
+        # Créer le dossier de sortie s'il n'existe pas
         if not os.path.exists(output_folder):
             os.makedirs(output_folder)
 
