@@ -41,7 +41,7 @@ def run_prediction(input_file_path, model_folder, output_folder):
         st.write(f"Chemin du dossier d'entrée : {input_folder}")
         st.write(f"Chemin du fichier d'entrée renommé : {new_file_path}")
         st.write(f"Chemin du dossier de sortie : {output_dir}")
-        
+
         # Faire la prédiction
         predict_from_folder(model_folder, input_folder, output_dir, folds=[0], save_npz=False, num_threads_preprocessing=1, num_threads_nifti_save=1)
         return new_file_path
