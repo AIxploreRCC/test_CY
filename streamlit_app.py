@@ -7,7 +7,7 @@ import shutil
 def save_uploaded_file(uploaded_file):
     try:
         # Créer le dossier uploads s'il n'existe pas
-        uploads_dir = "uploads"
+        uploads_dir = os.path.join(os.getcwd(), "uploads")
         if not os.path.exists(uploads_dir):
             os.makedirs(uploads_dir)
 
@@ -23,8 +23,9 @@ def save_uploaded_file(uploaded_file):
 def run_prediction(input_file_path, model_folder, output_folder):
     try:
         # Créer le dossier de sortie s'il n'existe pas
-        if not os.path.exists(output_folder):
-            os.makedirs(output_folder)
+        output_dir = os.path.join(os.getcwd(), output_folder)
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
 
         # Déplacer le fichier téléchargé vers le dossier d'entrée attendu par le modèle
         input_folder = os.path.dirname(input_file_path)
@@ -52,7 +53,7 @@ if uploaded_file is not None:
         st.write(f"Chemin du fichier enregistré : {input_file_path}")
 
         # Dossier du modèle (local ou URL GitHub)
-        model_folder = "https://github.com/AIxploreRCC/test_CY/raw/main/seg/"  # Mettez à jour ce chemin avec le chemin de votre modèle
+        model_folder = "/path/to/your/model/folder"  # Mettez à jour ce chemin avec le chemin de votre modèle
         output_folder = "output"
 
         # Bouton pour exécuter la prédiction
