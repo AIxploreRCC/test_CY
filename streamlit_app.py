@@ -3,6 +3,13 @@ import os
 from nnunet.inference.predict import predict_from_folder
 import shutil
 
+import os
+
+uploads_dir = os.path.join(os.getcwd(), "uploads")
+if not os.path.exists(uploads_dir):
+    os.makedirs(uploads_dir)
+
+
 # Fonction pour enregistrer le fichier téléchargé
 def save_uploaded_file(uploaded_file):
     try:
