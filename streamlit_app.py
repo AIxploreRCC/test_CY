@@ -7,7 +7,7 @@ import shutil
 def save_uploaded_file(uploaded_file):
     try:
         # Créer le dossier uploads s'il n'existe pas
-        uploads_dir = os.path.abspath("uploads")
+        uploads_dir = "uploads"
         if not os.path.exists(uploads_dir):
             os.makedirs(uploads_dir)
 
@@ -23,9 +23,8 @@ def save_uploaded_file(uploaded_file):
 def run_prediction(input_file_path, model_folder, output_folder):
     try:
         # Créer le dossier de sortie s'il n'existe pas
-        output_dir = os.path.abspath(output_folder)
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
+        if not os.path.exists(output_folder):
+            os.makedirs(output_folder)
 
         # Déplacer le fichier téléchargé vers le dossier d'entrée attendu par le modèle
         input_folder = os.path.dirname(input_file_path)
@@ -50,6 +49,7 @@ if uploaded_file is not None:
     input_file_path = save_uploaded_file(uploaded_file)
     if input_file_path:
         st.success(f"Fichier téléchargé et enregistré avec succès : {uploaded_file.name}")
+        st.write(f"Chemin du fichier enregistré : {input_file_path}")
 
         # Dossier du modèle (local ou URL GitHub)
         model_folder = "https://github.com/AIxploreRCC/test_CY/raw/main/seg/"  # Mettez à jour ce chemin avec le chemin de votre modèle
