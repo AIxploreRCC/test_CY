@@ -3,13 +3,6 @@ import os
 from nnunet.inference.predict import predict_from_folder
 import shutil
 
-import os
-
-uploads_dir = os.path.join(os.getcwd(), "uploads")
-if not os.path.exists(uploads_dir):
-    os.makedirs(uploads_dir)
-
-
 # Fonction pour enregistrer le fichier téléchargé
 def save_uploaded_file(uploaded_file):
     try:
@@ -34,12 +27,13 @@ def run_prediction(input_file_path, model_folder, output_folder):
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
 
-        # Renommer le fichier téléchargé pour correspondre au format attendu par le modèle
-        new_file_path = os.path.join(output_dir, "300_0000.nii.gz")
-        shutil.copyfile(input_file_path, new_file_path)
-
+        # Déplacer le fichier téléchargé vers le dossier d'entrée attendu par le modèle
+        input_folder = os.path.dirname(input_file_path)
+        new_file_path = os.path.join(input_folder, "300_0000.nii.gz")
+        shutil.move(input_file_path, new_file_path)
+        
         # Faire la prédiction
-        predict_from_folder(model_folder, output_dir, output_dir, folds=[0], save_npz=False, num_threads_preprocessing=1, num_threads_nifti_save=1)
+        predict_from_folder(model_folder, input_folder, output_folder, folds=[0], save_npz=False, num_threads_preprocessing=1, num_threads_nifti_save=1)
         return new_file_path
     except Exception as e:
         st.error(f"Erreur lors de l'exécution de la prédiction : {e}")
